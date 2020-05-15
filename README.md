@@ -1,8 +1,8 @@
-# Boxing objects into primitive types proposal
+# ECMAScript Proposal for Boxing Objects into Primitives
 
-This proposal aims to solve a problem space introduced by the [Record & Tuple Proposal][rtp]: how can we reference and access non-primitive types in a primitive type.
+This proposal aims to solve a problem space introduced by the [Record & Tuple Proposal][rtp]; how can we reference and access non-primitive values in a primitive?
 
-Right now, [Records & Tuples][rtp] can't refer to objects, functions or methods and will throw a `TypeError` when someone attempts to do it:
+[Records & Tuples][rtp] can't contain objects, functions, or methods and will throw a `TypeError` when someone attempts to do it:
 
 ```js
 const server = #{
@@ -11,12 +11,9 @@ const server = #{
 };
 ```
 
-This limitation exists because the [Record & Tuple Proposal][rtp] attempts to keep 2 invariants:
+This limitation exists because the one of the **key goals** of the [Record & Tuple Proposal][rtp]  is to have deep immutability guarantees _by default_.
 
-- They behave like primitive types
-- They have deep immutability guarantees _by default_
-
-Being immutable by default is important but could be overridable and that is what this proposal is about.
+Being immutable by default is important but can be overridable; that is what this proposal attempts to address.
 
 There are two main use cases for relaxing this default (as far as we know):
 
@@ -52,7 +49,7 @@ server.references[server.structure.handler]({ /* ... */ });
 
 This approach requires us to make sure the bookkeeper is moved around alongside the structure. Additionally this system is not very ergonomic.
 
-However, we can always wrap things up in a class so the bookkeeper could generate and associate the symbol and help you "dereference" it:
+However, we can always wrap things up in a class so that the bookkeeper can generate and associate the symbol and help you "dereference" it:
 
 ```js
 class RefBookkeeper {
@@ -95,7 +92,7 @@ At this point one major flaw of the userland approach starts to appear: all refe
 While those userland solutions make object referencing from record and tuple possible, they have two major flaws:
 
 - Manual bookkeeping of references is necessary to avoid memory leaks
-- Ergonomics: explicit referencing and dereferencing is something that is necessary because we still want to be deeply immutable _by default_  but in userland solutions they can be cumbersome to use, especially the dereferencing
+- Ergonomics: explicit referencing and dereferencing is something that is necessary because we still want to be deeply immutable _by default_  but in userland solutions they can be cumbersome to use, especially dereferencing.
 
 ## Boxing objects and automatic bookkeeping
 
@@ -167,7 +164,7 @@ refs.deref(server.handler)({ /* ... */ });
 
 ### RefCollection
 
-Our first attempt to solve that issue was [RefCollection](https://github.com/rricard/proposal-refcollection) which is in between the two befroe-mentioned solutions. It unfortunately does not solve the issues this proposal is putting forward well enough.
+Our initial attempt to provide a solution for this problem space was [RefCollection](https://github.com/rricard/proposal-refcollection) which sits in between the two aforementioned solutions.
 
 [rtp]: https://github.com/tc39/proposal-record-tuple
 [rcp]: https://github.com/rricard/proposal-refcollection
