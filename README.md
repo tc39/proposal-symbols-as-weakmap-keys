@@ -13,18 +13,53 @@ const server = #{
 
 This limitation exists because the one of the **key goals** of the [Record & Tuple Proposal][rtp]  is to have deep immutability guarantees _by default_.
 
-Being immutable by default is important but can be overridable; that is what this proposal attempts to address.
-
-There are two main use cases for relaxing this default (as far as we know):
-
-- Being able to store an object or anything that can't be represented as a primitive type alongside some deeply immutable data
-- Being able to reference mutable state from an immutable representation of that state (like a virtual dom)
-
-Being able to perform those actions opens up more use cases and possibilities for primitive types. The goal of this proposal is to introduce ways to escape that default behavior!
+The userland solutions mentioned below provide multiple methods of side-stepping this limitation, and `Record and Tuple` is viable and useful without additional language support for boxing objects. This proposal attempts to describe solutions that complement the usage of these userland solutions with `Record and Tuple`, but is not a prerequisite to landing `Record and Tuple` in the language.
 
 ## Userland solutions
 
-You can already escape those constraints as of today!
+You can already escape the aforementioned constraints without additional language features.
+
+Instead of directly storing objects in a record or tuple, you can instead store some application domain specific information that can be used somewhere else to perform the desired action. For example, instead of embedding an `execute` function in an object like this example:
+
+```js
+const object = {
+    execute() {
+        console.log("foo");
+    },
+};
+object.execute();
+```
+
+You can instead store an `action` that gets consumed by another function when needed:
+```js
+const record = #{
+    action: "foo",
+};
+
+function execute(record) {
+    if (record.action === "foo") {
+        console.log("foo");
+    }
+}
+
+execute(record);
+```
+
+As another example, if you want to store an object containing primitives in a record, you can store the individual properties themselves instead with the spread operator:
+
+Instead of:
+```js
+const object = { foo: "bar" };
+const record = #{ object: object }; // TypeError
+```
+
+Try this:
+```js
+const object = { foo: "bar" };
+const record = #{ ...object };
+```
+
+#### If these solutions are not sufficient, there are several userland alternatives that allow you to indirectly reference objects from records and tuples:
 
 For instance you can create a bookkeeper object that stores references (symbols, but could be strings or numbers) in a separate object that you can pass around alongside your records and tuples:
 
@@ -87,16 +122,16 @@ const server = #{
 refs.deref(server.handler)({ /* ... */ });
 ```
 
-At this point one major flaw of the userland approach starts to appear: all referenced objects will stay in memory as long as the bookkeeper exists. If the bookkeeper is global, the referenced objects will stay in memory as long as the realm exists...
+At this point one flaw of the userland approach starts to appear: all referenced objects will stay in memory as long as the bookkeeper exists. If the bookkeeper is global, the referenced objects will stay in memory as long as the realm exists...
 
-While those userland solutions make object referencing from record and tuple possible, they have two major flaws:
+While these userland solutions make referencing objects from record and tuple possible, they have two flaws:
 
 - Manual bookkeeping of references is necessary to avoid memory leaks
 - Ergonomics: explicit referencing and dereferencing is something that is necessary because we still want to be deeply immutable _by default_  but in userland solutions they can be cumbersome to use, especially dereferencing.
 
-## Boxing objects and automatic bookkeeping
+# Boxing objects and automatic bookkeeping
 
-This proposal intends to find a solution to the before-mentioned issues. In this section we explore possible solutions that we found that could help us solve those issues.
+This proposal intends to find a solution to the aforementioned issues. In this section we explore possible solutions that we found that could help us solve those issues.
 
 ### The `box` primitive type
 
@@ -164,7 +199,7 @@ refs.deref(server.handler)({ /* ... */ });
 
 ### RefCollection
 
-Our initial attempt to provide a solution for this problem space was [RefCollection](https://github.com/rricard/proposal-refcollection) which sits in between the two aforementioned solutions.
+Our initial attempt to provide a solution for this problem space was [RefCollection](https://github.com/rricard/proposal-refcollection) which sits in between the two aforementioned solutions. There is not a fundamental difference between these solutions, as they all attempt to leverage a primitive's identity in order to point to an object, just via different mechanisms.
 
 [rtp]: https://github.com/tc39/proposal-record-tuple
 [rcp]: https://github.com/rricard/proposal-refcollection
