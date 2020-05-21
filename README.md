@@ -56,24 +56,25 @@ const record = #{ object: object }; // TypeError
 Try this:
 ```js
 const object = { foo: "bar" };
-const record = #{ ...object };
+const record = #{ object: #{ ...object } };
 ```
 
-#### If these solutions are not sufficient, there are several userland alternatives that allow you to indirectly reference objects from records and tuples:
+#### Centralizing references to objects
 
-For instance you can create a bookkeeper object that stores references (symbols, but could be strings or numbers) in a separate object that you can pass around alongside your records and tuples:
+If you can't convert everything to primitives, Records and Tuples directly, then a separate mapping, implemented in JavaScript, could be used to explain how some primitives should be interpreted in terms of objects. You can think of this as generalizing the interpretation of the action strings above.
+
+For example, a simple Array of references could be passed around, in parallel to a Record, and certain numbers in the Record could be treated as indices into that Array when needed.
 
 ```js
 const server = (() => {
-    const handlerRef = Symbol();
+    const handlerRef = 0;
     function handler(req) { /* ... */ }
     const structure = #{
         port: 8080,
         handler: handlerRef,
     };
-    const references = {
-        [handlerRef]: handler,
-    };
+    const references = [];
+    references[handlerRef] = handler;
     return {
         structure,
         references,
@@ -82,17 +83,15 @@ const server = (() => {
 server.references[server.structure.handler]({ /* ... */ });
 ```
 
-This approach requires us to make sure the bookkeeper is moved around alongside the structure. Additionally this system is not very ergonomic.
-
-However, we can always wrap things up in a class so that the bookkeeper can generate and associate the symbol and help you "dereference" it:
+To access, explicit reference to the Array needs to be made. These references could be encapsulated in a bookkeeper class, to assist with dereferencing:
 
 ```js
 class RefBookkeeper {
-    #references = {};
+    #references = [];
     ref(obj) { 
-        const sym = Symbol();
-        this.#references[sym] = obj;
-        return sym;
+        const idx = this.#references.length;
+        this.#references[idx] = obj;
+        return idx;
     }
     deref(sym) { return this.#references[sym]; }
 }
@@ -111,7 +110,7 @@ const server = (() => {
 server.references.deref(server.structure.handler)({ /* ... */ });
 ```
 
-Finally, we can always make that bookkeeping global and stop moving the refs with the structure:
+You might want to reuse the same `RefBookkeeper` object across multiple server instances, so you don't have as much to keep track of for each instance:
 
 ```js
 globalThis.refs = new RefBookkeeper();
@@ -122,26 +121,26 @@ const server = #{
 refs.deref(server.handler)({ /* ... */ });
 ```
 
-At this point one flaw of the userland approach starts to appear: all referenced objects will stay in memory as long as the bookkeeper exists. If the bookkeeper is global, the referenced objects will stay in memory as long as the realm exists...
+However, this pattern would lead to some memory management issues: As the program runs, more and more things might get added to `refs`, the Array just gets longer and longer, and all of the entries in the Array have to be held in memory just in case someone calls `deref` to get them, even if no one is actually going to do that. But really, we should avoid referencing things that are no longer needed anymore, so the garbage collector can reclaim memory. There are two ways to do this:
+- If we reuse one global `RefBookkeeper` everywhere, then we need to manually delete unused entries when we're done with them, with an extra `delete` method added to the class, allowing the index to be reused. (We can't use FinalizationRegistry for this, since Numbers are never really dead.)
+- Otherwise, we could avoid using a global RefBookkeeper, and instead use smaller local ones, which we pass around in parallel to the Record/Tuple, as in the previous examples.
 
-While these userland solutions make referencing objects from record and tuple possible, they have two flaws:
+Both of these are a bit unfortunate; it would be nice if you didn't have to worry about deleting entries from `RefBookkeeper`, and if you didn't have to pass it around in parallel with Records and Tuples. Further, it's not really optimal ergonomics to have to call `refs.deref(idx)` all the time, and to have to remember which numbers serve as an index into the RefBookkeeper and which are just meant to be numbers.
 
-- Manual bookkeeping of references is necessary to avoid memory leaks
-- Ergonomics: explicit referencing and dereferencing is something that is necessary because we still want to be deeply immutable _by default_  but in userland solutions they can be cumbersome to use, especially dereferencing.
+# Boxing objects to place in Records and Tuples while avoiding bookeeping
 
-# Boxing objects and automatic bookkeeping
-
-This proposal intends to find a solution to the aforementioned issues. In this section we explore possible solutions that we found that could help us solve those issues.
+Overall, with the patterns described above, Records and Tuples can work with JavaScript objects in a variety of ways, such that many different problems can be solved with them directly. We don't believe that any additions are *needed* to make Records and Tuples significantly useful. However, to improve ergonomics further, this proposal exists to discuss various mechanisms to make simple, flexible references to JavaScript objects.
 
 ### The `box` primitive type
 
-This potential solution introduces a new primitive type called `box`. It has a itself a boxing object `Box` that carries some very useful methods.
+This potential solution introduces a new primitive type called `box`. These primitives can be constructed with `Box(obj)`, and the object can be retrieved with `box.deref()`, which would return `obj`.
 
 #### Examples
 
 ```js
 const obj = { hello: "world" };
 const box = Box(obj);
+assert(typeof box === "box", "boxes are a new primitive type");
 assert(obj !== box, "boxes are not their boxed object");
 assert(obj.hello === box.deref().hello, "boxes can deref props");
 assert(obj === box.deref(), "boxes can deref the full object");
@@ -166,13 +165,23 @@ const box2 = Box(obj);
 assert(box1 === box2);
 ```
 
-##### Boxes use a global automatic bookkeeper
+##### Boxes remove the need for bookkeeping
 
-Boxes will not keep objects indefinitely in memory. When a box is not needed anymore, the attached object can be let go.
+There's no need to pass around any kind of `RefBookkeeper` object; just call `.deref()` directly on the box that's in the Record or Tuple.
 
-##### Boxes are attached to their realm
+JS's built-in garbage collector understands boxes, so you don't have to worry about keeping track of a separate reference to the object, or nulling that reference out when it's no longer needed. As long as you can access a box, calling `.deref()` on the box will give you access to the object it was created with.
 
-The bookkeeper that the boxes use is attached to their realm. Dereferencing a box from another realm in a given realm will not return the object. (will either throw or return `undefined`)
+##### Edge case: Calling `.deref()` on a Box when passed to a separate global object (Realm)
+
+When working in the context of multiple JS global objects (e.g., with a same-origin iframe, or the Node.js vm module), if a box is passed from one global object to another, then calling the `.deref()` method in the context of that other global object would lead to behavior as if the box is unrecognized (either returning `undefined` or throwing; bikeshedding welcome). 
+
+It's possible to get around this by passing `Box.prototype.deref()` to that other global object. This method "grants the right" to dereference boxes created in the context of that global object. In this way, different global objects are a little bit isolated from each other, when it comes to `Box`.
+
+###### Membrane/Ocap implications
+
+This isolation enables membrane-based security in the context of Boxes. Since Boxes are primitives, they cannot be membrane-wrapped. But, the `Box.prototype.deref()` method exists separately--this *method* can be membrane-wrapped, in order to mediate before giving out the information contained in the box.
+
+Conceptually, in object-capability (ocap) security terms: Box primitives don't directly point to the object. Instead, they are treated as keys in a mapping, owned by the `Box` constructor, which `Box.prototype.deref` uses. Note that a Realm may deny access to this built-in mapping by monkey-patching `Box.prototype.deref`, which is the only point of access.
 
 ### `symbol` as `WeakMap` keys
 
@@ -197,9 +206,19 @@ const server = #{
 refs.deref(server.handler)({ /* ... */ });
 ```
 
+See [earlier discussion](https://github.com/tc39/ecma262/issues/1194) on Symbols as WeakMap keys--it remains controversial and not currently supported. 
+
 ### RefCollection
 
-Our initial attempt to provide a solution for this problem space was [RefCollection](https://github.com/rricard/proposal-refcollection) which sits in between the two aforementioned solutions. There is not a fundamental difference between these solutions, as they all attempt to leverage a primitive's identity in order to point to an object, just via different mechanisms.
+Our initial attempt to provide a solution for this problem space was [RefCollection](https://github.com/rricard/proposal-refcollection) which sits in between the two aforementioned solutions.
+- A RefCollection could be built with WeakMaps with Symbol keys, but it's a somewhat higher-level mechanism.
+- On the other hand, you could think of Box as a built-in per-Realm RefCollection, that just happens to use a new primitive type which is parallel to Symbol.
+
+Since you could think of these each as implemented in terms of the other, more or less, they're equivalent at some level: they all attempt to leverage a primitive's identity in order to let an object be accessed, mediated through a mapping that only holds that object alive if the unforgeable primitive exists.
+
+## Summing up
+
+We think that `Box` has the most ergonomic surface area of these three options, which is why this document puts that solution front and center, ahead of Symbols in WeakMaps and RefCollection. At the same time, the userspace solutions seem sufficient for many/most use cases; we believe that Records and Tuples are very useful without Box or any other built-in mechanism for referencing objects from primtiives, and therefore makes sense to proceed with Records and Tuples independently.
 
 [rtp]: https://github.com/tc39/proposal-record-tuple
 [rcp]: https://github.com/rricard/proposal-refcollection
