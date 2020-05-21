@@ -1,5 +1,19 @@
 # ECMAScript Proposal for Boxing Objects into Primitives
 
+
+**Champions**:
+
+- Robin Ricard (@rricard)
+- Rick Button (@rickbutton)
+
+**Authors**:
+
+- Robin Ricard (@rricard)
+- Rick Button (@rickbutton)
+- Daniel Ehrenberg (@littledan)
+
+---
+
 This proposal aims to solve a problem space introduced by the [Record & Tuple Proposal][rtp]; how can we reference and access non-primitive values in a primitive?
 
 [Records & Tuples][rtp] can't contain objects, functions, or methods and will throw a `TypeError` when someone attempts to do it:
