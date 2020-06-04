@@ -290,8 +290,6 @@ Some questions to discuss about Symbols as WeakMap keys:
 
 As starting points, we propose that all Symbols be allowed as WeakMap keys, WeakSet entries, and in WeakRefs and FinalizationRegistry.
 
-We plan to propose "Symbols as WeakMap keys" for Stage 1 at the June 2020 TC39 meeting. By going through the stage process, we hope we can develop consensus on answers to these questions little by little.
-
 ## Summing up
 
 We think that adding Symbols as WeakMap keys is a useful, minimal primitive enabling Records and Tuples to reference Objects while respecting the constraints imposed by the goal to support membrane-based isolation within a single Realm. At the same time, the userspace solutions seem sufficient for many/most use cases; we believe that Records and Tuples are very useful without any additional mechanism for referencing objects from primtiives, and therefore makes sense to proceed with Records and Tuples independently of this proposal.
