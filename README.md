@@ -2,8 +2,6 @@
 
 Stage 1
 
-On the agenda for the June 2020 TC39 meeting for Stage 1
-
 **Coauthors/champions**:
 
 - Robin Ricard (@rricard)
