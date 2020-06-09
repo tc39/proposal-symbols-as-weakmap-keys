@@ -8,7 +8,7 @@ Stage 1
 - Rick Button (@rickbutton)
 - Daniel Ehrenberg (@littledan)
 
-[Spec text](https://github.com/tc39/ecma262/pull/2038)
+[Spec text](https://arai-a.github.io/ecma262-compare/?pr=2038)
 
 ---
 
