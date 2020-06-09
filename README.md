@@ -8,6 +8,8 @@ Stage 1
 - Rick Button (@rickbutton)
 - Daniel Ehrenberg (@littledan)
 
+[Spec text](https://github.com/tc39/ecma262/pull/2038)
+
 ---
 
 This proposal aims to solve a problem space introduced by the [Record & Tuple Proposal][rtp]; how can we reference and access non-primitive values in a primitive?
