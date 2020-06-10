@@ -285,7 +285,7 @@ refs.deref(server.handler)({ /* ... */ });
 See [earlier discussion](https://github.com/tc39/ecma262/issues/1194) on Symbols as WeakMap keys--it remains controversial and not currently supported.
 
 Some questions to discuss about Symbols as WeakMap keys:
-- Can registered symbols be used as WeakMap keys? Some TC39 delegates have argued strongly in either direction. We see both "allowing" and "disallowing" as acceptable otpions.
+- Can registered symbols be used as WeakMap keys? Some TC39 delegates have argued strongly in either direction. We see both "allowing" and "disallowing" as acceptable options.
     - Allowing registered symbols doesn't seem so bad, since registered Symbols are analogous to Objects that are held alive for the lifetime of the Realm. In the context of a Realm that stays alive as long as there's JS running (e.g., on the Web, the Realm of a Worker), things like `Symbol.iterator` are analogous to primordials like `Object.prototype` and `Array.prototype`, and registered `Symbol.for()` symbols are analogous to properties of the global object, in terms of lifetime. Just because these will stay alive doesn't mean we disallow them as WeakMap keys.
     - Prohibiting registered symbols doesn't seem so bad, since it's already readily observable whether a Symbol is registered, and it's not very useful to include these as WeakMap keys. Therefore, it's hard to see what practical or consistency problems the prohibition would create, or why it would be surprising (if there's a meaningful error message).
 - We could support Symbols in WeakRefs and FinalizationRegistry, or not. It's not clear what the use cases are, but it would seem consistent with adding them as WeakMap keys.
@@ -294,7 +294,7 @@ As starting points, we propose that all Symbols be allowed as WeakMap keys, Weak
 
 ## Summing up
 
-We think that adding Symbols as WeakMap keys is a useful, minimal primitive enabling Records and Tuples to reference Objects while respecting the constraints imposed by the goal to support membrane-based isolation within a single Realm. At the same time, the userspace solutions seem sufficient for many/most use cases; we believe that Records and Tuples are very useful without any additional mechanism for referencing objects from primtiives, and therefore makes sense to proceed with Records and Tuples independently of this proposal.
+We think that adding Symbols as WeakMap keys is a useful, minimal primitive enabling Records and Tuples to reference Objects while respecting the constraints imposed by the goal to support membrane-based isolation within a single Realm. At the same time, the userspace solutions seem sufficient for many/most use cases; we believe that Records and Tuples are very useful without any additional mechanism for referencing objects from primitives, and therefore makes sense to proceed with Records and Tuples independently of this proposal.
 
 [rtp]: https://github.com/tc39/proposal-record-tuple
 [rcp]: https://github.com/rricard/proposal-refcollection
