@@ -200,8 +200,32 @@ When working in the context of multiple JS global objects (e.g., with a same-ori
 
 It's possible to get around this by passing `Box.prototype.deref()` to that other global object. This method "grants the right" to dereference boxes created in the context of that global object. In this way, different global objects are a little bit isolated from each other, when it comes to `Box`.
 
-###### Membrane/Ocap analysis
+##### Formalization of Box semantics
 
+Data model
+- Each Box has an associated [[Id]]
+- Each Realm has an associated weak mapping [[Id]] -> Boxed object
+
+API
+- Box(obj)
+    - Create a new [[Id]], and write [[Id]] -> obj into the Realm's mapping
+    - Return a Box value with an associated [[Id]]
+- Box.prototype.deref
+    - If this Realm's mapping contains an entry for this.[[Id]]
+        - Return the associated object
+    - Else, return undefined
+
+###### Sharing and isolating with Boxes
+
+`Box.prototype.deref` is the only way to get at that Realm's mapping of [[Id]] to objects. Two different Realms cannot see into each other's Boxes, unless one Realm gives the other Realm a reference to its `Box.prototype.deref` method. A Realm can pull off its `deref`, delete it, etc, to control access to the mapping.
+
+If using membrane-based isolation within a Realm, `Box()` + `Box.prototype.deref` bypasses the membrane. To preserve the membrane, the feature must be disabled early, by
+```js
+delete Box.prototype.deref
+```
+Some committee members want all TC39 features to be available within a single (potentially frozen) Realm, membrane-isolated world. This goal makes the Box proposal inviable.
+
+<details>
 Our hope was that, the fact that object operations are used to access and call `Box.prototype.deref`, and this can be membrane-wrapped, would imply that the Box system would work great for membrane-based security--just run each membrane-enclosed piece of code in a separate Realm, and you can safely share Boxes, granting or denying access based on the access to the `Box` constructor or `deref` method.
 
 However, in systems which want to use membrane-based isolation *within* the same Realm, the whole feature would have to be turned off. This is to prevent boxes from "piercing" through membranes: a box primitive could be passed from one side of the membrane to the other (the membrane has no chance to intervene since boxes are not objects), and then it can simply be dereferenced. This would constitute an unmediated cross-membrane communication channel, going against the goals of the membrane system.
@@ -209,8 +233,7 @@ However, in systems which want to use membrane-based isolation *within* the same
 All access to the contents of boxes goes through `Box.prototype.deref`. A Realm's `Box.prototype` is ambiently available within that Realm, since it's referenced from ToObject, as long as you have a box. Although it is possible to turn off this feature from JavaScript by removing that function, this seems unfortunate for two reasons:
 - If the Realm is already deeply frozen, it's no longer possible to mutate `Box.prototype`
 - It'd be unfortunate to lose the functionality!
-
-(Note that, if this kind of isolation is taken to be a requirement, it would have other implications for other kinds of potential TC39 proposals, such as Record classes/value types.)
+</details>
 
 ### BoxMakers to avoid Realm-wide communication channels
 
