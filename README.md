@@ -204,7 +204,7 @@ It's possible to get around this by passing `Box.prototype.deref()` to that othe
 
 Data model
 - Each Box has an associated [[Id]]
-- Each Realm has an associated weap mapping [[Id]] -> Boxed object
+- Each Realm has an associated weak mapping [[Id]] -> Boxed object
 
 API
 - Box(obj)
