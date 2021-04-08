@@ -11,7 +11,7 @@ Stage 1
 - Caridy Patiño (@caridy)
 - Rick Waldron (@rwaldron)
 
-[Spec text](https://arai-a.github.io/ecma262-compare/?pr=2038)
+[Spec text](http://tc39.es/proposal-symbols-as-weakmap-keys)
 
 ---
 
