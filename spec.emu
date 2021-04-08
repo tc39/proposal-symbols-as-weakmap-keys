@@ -24,3 +24,180 @@ contributors:
     1. Return *false*.
   </emu-alg>
 </emu-clause>
+
+<emu-clause id="sec-modifications-of-weakmap">
+  <h1>Modifications to the properties of WeakMap.prototype</h1>
+
+  <emu-clause id="sec-weakmap.prototype.delete">
+    <h1>WeakMap.prototype.delete ( _key_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _M_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
+      1. Let _entries_ be the List that is _M_.[[WeakMapData]].
+      1. <del>If Type(_key_) is not Object, return *false*.</del>
+      1. <ins>If HasIdentity(_key_) is *false*, return *false*.</ins>
+      1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
+        1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
+          1. Set _p_.[[Key]] to ~empty~.
+          1. Set _p_.[[Value]] to ~empty~.
+          1. Return *true*.
+      1. Return *false*.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-weakmap.prototype.get">
+    <h1>WeakMap.prototype.get ( _key_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _M_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
+      1. Let _entries_ be the List that is _M_.[[WeakMapData]].
+      1. <del>If Type(_key_) is not Object, return *undefined*.</del>
+      1. <ins>If HasIdentity(_key_) is *false*, return *undefined*.</ins>
+      1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
+        1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return _p_.[[Value]].
+      1. Return *undefined*.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-weakmap.prototype.has">
+    <h1>WeakMap.prototype.has ( _key_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _M_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
+      1. Let _entries_ be the List that is _M_.[[WeakMapData]].
+      1. <del>If Type(_key_) is not Object, return *false*.</del>
+      1. <ins>If HasIdentity(_key_) is *false*, return *false*.</ins>
+      1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
+        1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return *true*.
+      1. Return *false*.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-weakmap.prototype.set">
+    <h1>WeakMap.prototype.set ( _key_, _value_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _M_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
+      1. Let _entries_ be the List that is _M_.[[WeakMapData]].
+      1. <del>If Type(_key_) is not Object, throw a *TypeError* exception.</del>
+      1. <ins>If HasIdentity(_key_) is *false*, throw a *TypeError* exception.</ins>
+      1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
+        1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
+          1. Set _p_.[[Value]] to _value_.
+          1. Return _M_.
+      1. Let _p_ be the Record { [[Key]]: _key_, [[Value]]: _value_ }.
+      1. Append _p_ as the last element of _entries_.
+      1. Return _M_.
+    </emu-alg>
+  </emu-clause>
+</emu-clause>
+
+<emu-clause id="sec-modifications-of-weakset">
+  <h1>Modifications to the properties of WeakSet.prototype</h1>
+
+  <emu-clause id="sec-weakset.prototype.add">
+    <h1>WeakSet.prototype.add ( _value_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _S_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
+      1. <del>If Type(_value_) is not Object, throw a *TypeError* exception.</del>
+      1. <ins>If HasIdentity(_value_) is *false*, throw a *TypeError* exception.</ins>
+      1. Let _entries_ be the List that is _S_.[[WeakSetData]].
+      1. For each element _e_ of _entries_, do
+        1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
+          1. Return _S_.
+      1. Append _value_ as the last element of _entries_.
+      1. Return _S_.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-weakset.prototype.delete">
+    <h1>WeakSet.prototype.delete ( _value_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _S_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
+      1. <del>If Type(_value_) is not Object, return *false*.</del>
+      1. <ins>If HasIdentity(_value_) is *false*, return *false*.</ins>
+      1. Let _entries_ be the List that is _S_.[[WeakSetData]].
+      1. For each element _e_ of _entries_, do
+        1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
+          1. Replace the element of _entries_ whose value is _e_ with an element whose value is ~empty~.
+          1. Return *true*.
+      1. Return *false*.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-weakset.prototype.has">
+    <h1>WeakSet.prototype.has ( _value_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _S_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
+      1. Let _entries_ be the List that is _S_.[[WeakSetData]].
+      1. <del>If Type(_value_) is not Object, return *false*.</del>
+      1. <ins>If HasIdentity(_value_) is *false*, return *false*.</ins>
+      1. For each element _e_ of _entries_, do
+        1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, return *true*.
+      1. Return *false*.
+    </emu-alg>
+  </emu-clause>
+</emu-clause>
+
+<emu-clause id="sec-modifications-of-weakref-finalization">
+  <h1>Modifications to WeakRef and FinalizationRegistry</h1>
+  <emu-clause id="sec-weak-ref-target">
+    <h1>WeakRef ( _target_ )</h1>
+    <p>When the `WeakRef` function is called with argument _target_, the following steps are taken:</p>
+    <emu-alg>
+      1. If NewTarget is *undefined*, throw a *TypeError* exception.
+      1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
+      1. <ins>If HasIdentity(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. Let _weakRef_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%WeakRef.prototype%"*, &laquo; [[WeakRefTarget]] &raquo;).
+      1. Perform ! AddToKeptObjects(_target_).
+      1. Set _weakRef_.[[WeakRefTarget]] to _target_.
+      1. Return _weakRef_.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-finalization-registry.prototype.register">
+    <h1>FinalizationRegistry.prototype.register ( _target_, _heldValue_ [ , _unregisterToken_ ] )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _finalizationRegistry_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
+      1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
+      1. <ins>If HasIdentity(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. If SameValue(_target_, _heldValue_) is *true*, throw a *TypeError* exception.
+      1. <del>If Type(_unregisterToken_) is not Object, then</del>
+      1. <ins>If HasIdentity(_unregisterToken_) is *false*, then</ins>
+        1. If _unregisterToken_ is not *undefined*, throw a *TypeError* exception.
+        1. Set _unregisterToken_ to ~empty~.
+      1. Let _cell_ be the Record { [[WeakRefTarget]]: _target_, [[HeldValue]]: _heldValue_, [[UnregisterToken]]: _unregisterToken_ }.
+      1. Append _cell_ to _finalizationRegistry_.[[Cells]].
+      1. Return *undefined*.
+    </emu-alg>
+  </emu-clause>
+
+  <emu-clause id="sec-finalization-registry.prototype.unregister">
+    <h1>FinalizationRegistry.prototype.unregister ( _unregisterToken_ )</h1>
+    <p>The following steps are taken:</p>
+    <emu-alg>
+      1. Let _finalizationRegistry_ be the *this* value.
+      1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
+      1. <del>If Type(_unregisterToken_) is not Object, throw a *TypeError* exception.</del>
+      1. <ins>If HasIdentity(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
+      1. Let _removed_ be *false*.
+      1. For each Record { [[WeakRefTarget]], [[HeldValue]], [[UnregisterToken]] } _cell_ of _finalizationRegistry_.[[Cells]], do
+        1. If _cell_.[[UnregisterToken]] is not ~empty~ and SameValue(_cell_.[[UnregisterToken]], _unregisterToken_) is *true*, then
+          1. Remove _cell_ from _finalizationRegistry_.[[Cells]].
+          1. Set _removed_ to *true*.
+      1. Return _removed_.
+    </emu-alg>
+  </emu-clause>
+</emu-clause>
