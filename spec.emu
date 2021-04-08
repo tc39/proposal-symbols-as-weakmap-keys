@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf8">
+<link rel="stylesheet" href="./spec.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
+<script src="./spec.js"></script>
+<pre class="metadata">
+title: Symbol as WeakMap Keys Proposal
+stage: 1
+contributors:
+  - Robin Ricard
+  - Rick Button
+  - Daniel Ehrenberg
+  - Leo Balter
+  - Caridy Patiño
+  - Rick Waldron
+</pre>
+
+<emu-clause id="sec-hasidentity" aoid="HasIdentity">
+  <h1>HasIdentity ( _argument_ )</h1>
+  <p>The abstract operation HasIdentity takes argument _argument_ (an ECMAScript language value). It determines if _argument_ is considered to have a unique identity, enabling _argument_ to be a key of a WeakMap or entry in a WeakSet. This operation performs the following steps when called:</p>
+  <emu-alg>
+    1. If Type(_argument_) is Object, return *true*.
+    1. If Type(_argument_) is Symbol, return *true*.
+    1. Return *false*.
+  </emu-alg>
+</emu-clause>
