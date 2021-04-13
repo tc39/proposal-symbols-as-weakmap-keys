@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "Symbols as WeakMap Keys",
+  "name": "Symbols-as-WeakMap-Keys",
   "description": "A TC39 Proposal for Symbols as WeakMap Keys",
   "scripts": {
     "start": "npm run build-loose -- --watch",
