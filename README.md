@@ -11,7 +11,7 @@ Stage 1
 - Caridy Patiño (@caridy)
 - Rick Waldron (@rwaldron)
 
-[Spec text](http://tc39.es/proposal-symbols-as-weakmap-keys)
+[Spec text](https://tc39.es/proposal-symbols-as-weakmap-keys)
 
 ---
 
