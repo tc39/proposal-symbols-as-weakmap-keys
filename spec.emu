@@ -17,11 +17,14 @@ contributors:
 
 <emu-clause id="sec-isobjectorsymbol" aoid="IsObjectOrSymbol">
   <h1>IsObjectOrSymbol ( _argument_ )</h1>
-  <p>The abstract operation IsObjectOrSymbol takes argument _argument_ (an ECMAScript language value). It determines if _argument_ is considered to have a unique identity, enabling _argument_ to be a key of a WeakMap or entry in a WeakSet. This operation performs the following steps when called:</p>
+  <p>The abstract operation IsObjectOrSymbol takes argument _argument_ (an ECMAScript language value) and determines if its Type is Object or Symbol. This operation performs the following steps when called:</p>
   <emu-alg>
     1. If Type(_argument_) is Object or Symbol, return *true*.
     1. Return *false*.
   </emu-alg>
+  <emu-note type=editor>
+    <p>This abstract operation determines if _argument_ is considered to have a unique value being an Object or a Symbol. This enables _argument_ to be a valid key of a WeakMap or entry in a weak collection, e.g. WeakSet, WeakRef, or FinalizationRegistry.</p>
+  </emu-note>
 </emu-clause>
 
 <emu-clause id="sec-modifications-of-weakmap">
