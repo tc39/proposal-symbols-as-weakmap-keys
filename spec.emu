@@ -203,3 +203,49 @@ contributors:
     </emu-alg>
   </emu-clause>
 </emu-clause>
+
+<emu-clause id="sec-modifications-to-liveness">
+  <h1>Modifications to definitions of Liveness</h1>
+  <emu-clause id="sec-liveness">
+    <h1>Liveness</h1>
+
+    <p>For some set of symbols and objects _S_, a <dfn>hypothetical WeakRef-oblivious</dfn> execution with respect to _S_ is an execution whereby the abstract operation WeakRefDeref of a WeakRef whose referent is an element of _S_ always returns *undefined*.</p>
+
+    <emu-note>
+      WeakRef-obliviousness, together with liveness, capture two notions. One, that a WeakRef itself does not keep a reference alive. Two, that cycles in liveness does not imply that a reference is live. To be concrete, if determining _ref_'s liveness depends on determining the liveness of another WeakRef referent, _ref2_, _ref2_'s liveness cannot assume _ref_'s liveness, which would be circular reasoning.
+    </emu-note>
+    <emu-note>
+      WeakRef-obliviousness is defined on sets of symbols or objects instead of individual references to account for cycles. If it were defined on individual values, then a reference in a cycle will be considered live even though its respective value is only observed via WeakRefs of other references in the cycle.
+    </emu-note>
+    <emu-note>
+      Colloquially, we say that an individual symbol or object is live if every set of symbols and/or objects containing it is live.
+    </emu-note>
+
+    <p>At any point during evaluation, a set of symbols and/or _S_ is considered <dfn>live</dfn> if either of the following conditions is met:</p>
+
+    <ul>
+      <li>
+        Any element in _S_ is included in any agent's [[KeptAlive]] List.
+      </li>
+      <li>
+        There exists a valid future hypothetical WeakRef-oblivious execution with respect to _S_ that observes the value of any symbol or object in _S_.
+      </li>
+    </ul>
+    <emu-note>
+      The second condition above intends to capture the intuition that a reference is live if its identity is observable via non-WeakRef means. An reference value's identity may be observed by observing a strict equality comparison or observing the value being used as key in a Map.
+    </emu-note>
+    <emu-note>
+      <p>Presence of a symbol or an object in a field, an internal slot, or a property does not imply that the reference is live. For example if the reference in question is never passed back to the program, then it cannot be observed.</p>
+
+      <p>This is the case for keys in a WeakMap, members of a WeakSet, as well as the [[WeakRefTarget]] and [[UnregisterToken]] fields of a FinalizationRegistry Cell record.</p>
+
+      <p>The above definition implies that, if a key in a WeakMap is not live, then its corresponding value is not necessarily live either.</p>
+    </emu-note>
+    <emu-note>
+      Presence of a symbol in the GlobalSymbolRegistry List might keep the reference alive. Symbol values might have their liveness compromised if contained in the GlobalSymbolRegistry List as it is globablly avaialble and shared by all realms.
+    </emu-note>
+    <emu-note>
+      Liveness is the lower bound for guaranteeing which WeakRefs engines must not empty. Liveness as defined here is undecidable. In practice, engines use conservative approximations such as reachability. There is expected to be significant implementation leeway.
+    </emu-note>
+  </emu-clause>
+</emu-clause>
