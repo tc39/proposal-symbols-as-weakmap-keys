@@ -50,26 +50,38 @@ contributors:
     </emu-clause>
   </emu-clause>
 </emu-clause>
+<emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation">
+  <h1>
+    CanBeHeldWeakly (
+      _v_: unknown
+    ): a Boolean
+  </h1>
+  <dl class="header">
+  </dl>
+  <emu-alg>
+    1. If Type(_v_) is Object, return *true*.
+    1. If Type(_v_) is Symbol, then
+      1. For each element _e_ of the GlobalSymbolRegistry List (see <emu-xref href="#sec-symbol.for"></emu-xref>), do
+        1. If SameValue(_e_.[[Symbol]], _v_) is *true*, return *false*.
+      1. Let _wellKnownSymbols_ be the symbols listed in <emu-xref href="#sec-well-known-symbols"></emu-xref>.
+      1. If _wellKnownSymbols_ contains _v_, return *false*.
+      1. Else, return *true*.
+    1. Return *false*.
+  </emu-alg>
+  <emu-note type=editor>
+    <p>This abstract operation determines if _v_ is considered to have a unique value being an Object or a Symbol. This enables _v_ to be a valid key of a WeakMap or entry in a weak collection, e.g. WeakSet, WeakRef, or FinalizationRegistry.</p>
+    <p>'Registered' and 'Well Known' symbols are not allowed to be observably held weakly, in a WeakSet for example, to provide simplicity for implementations that may collect them when their value is unreachable.</p>
+  </emu-note>
+</emu-clause>
 <emu-clause id="sec-%canbeheldweakly%">
   <h1>%CanBeHeldWeakly%( _argument_ )</h1>
   <p>The <dfn>%CanBeHeldWeakly%</dfn> intrinsic is an anonymous built-in function object that is defined once for each realm. When %CanBeHeldWeakly% is called with one argument _argument_ (an ECMAScript language value) the following steps are taken:</p>
   <emu-alg>
-    1. If Type(_argument_) is Object, return *true*.
-    1. If Type(_argument_) is Symbol, then
-      1. For each element _e_ of the GlobalSymbolRegistry List (see <emu-xref href="#sec-symbol.for"></emu-xref>), do
-        1. If SameValue(_e_.[[Symbol]], _argument_) is *true*, return *false*.
-      1. Let _wellKnownSymbols_ be the symbols listed in <emu-xref href="#sec-well-known-symbols"></emu-xref>.
-      1. If _wellKnownSymbols_ contains _argument_, return *false*.
-      1. Else, return *true*.
-    1. Return *false*.
+    1. Return ! CanBeHeldWeakly(_argument_).
   </emu-alg>
   <p>The value of the [[Extensible]] internal slot of a %CanBeHeldWeakly% function is *false*.</p>
   <p>The *"length"* property of a %CanBeHeldWeakly% function has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
   <p>The *"name"* property of a %CanBeHeldWeakly% function has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
-  <emu-note type=editor>
-    <p>This abstract operation determines if _argument_ is considered to have a unique value being an Object or a Symbol. This enables _argument_ to be a valid key of a WeakMap or entry in a weak collection, e.g. WeakSet, WeakRef, or FinalizationRegistry.</p>
-    <p>'Registered' and 'Well Known' symbols are not allowed to be observably held weakly, in a WeakSet for example, to provide simplicity for implementations that may collect them when their value is unreachable.</p>
-  </emu-note>
 </emu-clause>
 
 <emu-clause id="sec-modifications-of-weakmap">
@@ -89,7 +101,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *false*.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_key_) is *false*, return *false*.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
           1. Set _p_.[[Key]] to ~empty~.
@@ -107,7 +119,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *undefined*.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_key_) is *false*, return *undefined*.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, return *undefined*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return _p_.[[Value]].
       1. Return *undefined*.
@@ -122,7 +134,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *false*.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_key_) is *false*, return *false*.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return *true*.
       1. Return *false*.
@@ -137,7 +149,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_key_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, throw a *TypeError* exception.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
           1. Set _p_.[[Value]] to _value_.
@@ -153,7 +165,7 @@ contributors:
   <h1>Modifications to WeakSet</h1>
 
   <emu-clause id="sec-weakset.isValidValue">
-    <h1>WeakMap.isValidValue( _value_ )</h1>
+    <h1>WeakSet.isValidValue( _value_ )</h1>
     <p>The initial value of the isValidValue property is the %CanBeHeldWeakly% intrinsic object.</p>
     <p>This property has the attributes { [[Writable]]: *true*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
   </emu-clause>
@@ -165,7 +177,7 @@ contributors:
       1. Let _S_ be the *this* value.
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. <del>If Type(_value_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_value_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_value_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
@@ -182,7 +194,7 @@ contributors:
       1. Let _S_ be the *this* value.
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. <del>If Type(_value_) is not Object, return *false*.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_value_) is *false*, return *false*.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
@@ -200,7 +212,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. <del>If Type(_value_) is not Object, return *false*.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_value_) is *false*, return *false*.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, return *true*.
       1. Return *false*.
@@ -223,7 +235,7 @@ contributors:
     <emu-alg>
       1. If NewTarget is *undefined*, throw a *TypeError* exception.
       1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _weakRef_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%WeakRef.prototype%"*, &laquo; [[WeakRefTarget]] &raquo;).
       1. Perform ! AddToKeptObjects(_target_).
       1. Set _weakRef_.[[WeakRefTarget]] to _target_.
@@ -244,10 +256,10 @@ contributors:
       1. Let _finalizationRegistry_ be the *this* value.
       1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
       1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
       1. If SameValue(_target_, _heldValue_) is *true*, throw a *TypeError* exception.
       1. <del>If Type(_unregisterToken_) is not Object, then</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_unregisterToken_) is *false*, then</ins>
+      1. <ins>If ! CanBeHeldWeakly(_unregisterToken_) is *false*, then</ins>
         1. If _unregisterToken_ is not *undefined*, throw a *TypeError* exception.
         1. Set _unregisterToken_ to ~empty~.
       1. Let _cell_ be the Record { [[WeakRefTarget]]: _target_, [[HeldValue]]: _heldValue_, [[UnregisterToken]]: _unregisterToken_ }.
@@ -263,7 +275,7 @@ contributors:
       1. Let _finalizationRegistry_ be the *this* value.
       1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
       1. <del>If Type(_unregisterToken_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! %CanBeHeldWeakly%(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If ! CanBeHeldWeakly(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _removed_ be *false*.
       1. For each Record { [[WeakRefTarget]], [[HeldValue]], [[UnregisterToken]] } _cell_ of _finalizationRegistry_.[[Cells]], do
         1. If _cell_.[[UnregisterToken]] is not ~empty~ and SameValue(_cell_.[[UnregisterToken]], _unregisterToken_) is *true*, then
