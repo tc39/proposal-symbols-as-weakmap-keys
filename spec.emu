@@ -50,7 +50,7 @@ contributors:
     </emu-clause>
   </emu-clause>
 </emu-clause>
-<emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation">
+<emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation" aoid="CanBeHeldWeakly">
   <h1>
     CanBeHeldWeakly (
       _v_: unknown
