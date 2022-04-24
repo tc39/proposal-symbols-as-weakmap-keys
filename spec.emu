@@ -82,7 +82,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *false*.</del>
-      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
           1. Set _p_.[[Key]] to ~empty~.
@@ -100,7 +100,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *undefined*.</del>
-      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, return *undefined*.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, return *undefined*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return _p_.[[Value]].
       1. Return *undefined*.
@@ -115,7 +115,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *false*.</del>
-      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return *true*.
       1. Return *false*.
@@ -130,7 +130,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! CanBeHeldWeakly(_key_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, throw a *TypeError* exception.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
           1. Set _p_.[[Value]] to _value_.
@@ -152,7 +152,7 @@ contributors:
       1. Let _S_ be the *this* value.
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. <del>If Type(_value_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! CanBeHeldWeakly(_value_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_value_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
@@ -169,7 +169,7 @@ contributors:
       1. Let _S_ be the *this* value.
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. <del>If Type(_value_) is not Object, return *false*.</del>
-      1. <ins>If ! CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
@@ -187,7 +187,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. <del>If Type(_value_) is not Object, return *false*.</del>
-      1. <ins>If ! CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, return *true*.
       1. Return *false*.
@@ -204,7 +204,7 @@ contributors:
     <emu-alg>
       1. If NewTarget is *undefined*, throw a *TypeError* exception.
       1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _weakRef_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%WeakRef.prototype%"*, &laquo; [[WeakRefTarget]] &raquo;).
       1. Perform ! AddToKeptObjects(_target_).
       1. Set _weakRef_.[[WeakRefTarget]] to _target_.
@@ -219,10 +219,10 @@ contributors:
       1. Let _finalizationRegistry_ be the *this* value.
       1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
       1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
       1. If SameValue(_target_, _heldValue_) is *true*, throw a *TypeError* exception.
       1. <del>If Type(_unregisterToken_) is not Object, then</del>
-      1. <ins>If ! CanBeHeldWeakly(_unregisterToken_) is *false*, then</ins>
+      1. <ins>If CanBeHeldWeakly(_unregisterToken_) is *false*, then</ins>
         1. If _unregisterToken_ is not *undefined*, throw a *TypeError* exception.
         1. Set _unregisterToken_ to ~empty~.
       1. Let _cell_ be the Record { [[WeakRefTarget]]: _target_, [[HeldValue]]: _heldValue_, [[UnregisterToken]]: _unregisterToken_ }.
@@ -238,7 +238,7 @@ contributors:
       1. Let _finalizationRegistry_ be the *this* value.
       1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
       1. <del>If Type(_unregisterToken_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If ! CanBeHeldWeakly(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _removed_ be *false*.
       1. For each Record { [[WeakRefTarget]], [[HeldValue]], [[UnregisterToken]] } _cell_ of _finalizationRegistry_.[[Cells]], do
         1. If _cell_.[[UnregisterToken]] is not ~empty~ and SameValue(_cell_.[[UnregisterToken]], _unregisterToken_) is *true*, then
