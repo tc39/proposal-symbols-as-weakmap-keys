@@ -16,40 +16,38 @@ contributors:
   - Ashley Claymore
 </pre>
 
-<emu-clause id="sec-ecmascript-data-types-and-values" aoid="Type">
-  <h1>ECMAScript Data Types and Values</h1>
-  <emu-clause id="sec-object-type">
-    <h1>The Object Type</h1>
-    <emu-clause id="sec-well-known-intrinsic-objects">
-      <h1>Well-Known Intrinsic Objects</h1>
-      <emu-table id="table-well-known-intrinsic-objects" caption="Well-Known Intrinsic Objects" oldids="table-7">
-        <table>
-          <tr>
-            <th>
-              Intrinsic Name
-            </th>
-            <th>
-              Global Name
-            </th>
-            <th>
-              ECMAScript Language Association
-            </th>
-          </tr>
-          <tr>
-            <td>
-              <ins>%CanBeHeldWeakly%</ins>
-            </td>
-            <td>
-            </td>
-            <td>
-              <ins>A function to check if a value can be held weakly (<emu-xref href="#sec-%canbeheldweakly%"></emu-xref>)</ins>
-            </td>
-          </tr>
-        </table>
-      </emu-table>
-    </emu-clause>
+<emu-clause id="sec-executable-code-and-execution-contexts">
+  <h1>Executable Code and Execution Contexts</h1>
+
+  <emu-clause id="sec-weakref-processing-model">
+    <h1>Processing Model of WeakRef and FinalizationRegistry Objects</h1>
+
+    <emu-note>
+      This section needs updating to incoprate weakly held symbols.
+    </emu-note>
+  </emu-clause>
+
+  <emu-clause id="sec-addtokeptobjects" type="abstract operation">
+    <h1>
+      AddToKeptObjects (
+        <del>_object_: an Object,</del>
+        <ins>_value_: an Object or a Symbol,</ins>
+      ): ~unused~
+    </h1>
+    <dl class="header">
+    </dl>
+    <emu-alg>
+      1. Let _agentRecord_ be the surrounding agent's Agent Record.
+      1. <del>Append _object_ to _agentRecord_.[[KeptAlive]].</del>
+      1. <ins>Append _value_ to _agentRecord_.[[KeptAlive]].</ins>
+      1. Return ~unused~.
+    </emu-alg>
+    <emu-note>
+      When the abstract operation AddToKeptObjects is called with a target object <ins>, or symbol,</ins> reference, it adds the target to a list that will point strongly at the target until ClearKeptObjects is called.
+    </emu-note>
   </emu-clause>
 </emu-clause>
+
 <emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation" aoid="CanBeHeldWeakly">
   <h1>
     CanBeHeldWeakly (
@@ -63,35 +61,18 @@ contributors:
     1. If Type(_v_) is Symbol, then
       1. For each element _e_ of the GlobalSymbolRegistry List (see <emu-xref href="#sec-symbol.for"></emu-xref>), do
         1. If SameValue(_e_.[[Symbol]], _v_) is *true*, return *false*.
-      1. Let _wellKnownSymbols_ be the symbols listed in <emu-xref href="#sec-well-known-symbols"></emu-xref>.
-      1. If _wellKnownSymbols_ contains _v_, return *false*.
       1. Else, return *true*.
     1. Return *false*.
   </emu-alg>
   <emu-note type=editor>
-    <p>This abstract operation determines if _v_ is considered to have a unique value being an Object or a Symbol. This enables _v_ to be a valid key of a WeakMap or entry in a weak collection, e.g. WeakSet, WeakRef, or FinalizationRegistry.</p>
-    <p>'Registered' and 'Well Known' symbols are not allowed to be observably held weakly, in a WeakSet for example, to provide simplicity for implementations that may collect them when their value is unreachable.</p>
+    <p>This abstract operation determines if _v_ is considered to have an identity suitable for a weak reference. i.e. Is _v_ a valid candidate key of a WeakMap, or entry in a WeakSet, or target of a WeakRef or FinalizationRegistry.</p>
+    <p>'Registered symbols' are not considered to have a suitable identity because their identity is similar to strings, and implementations may attempt to collect them when they are unreachable.</p>
+    <p>'Well-Known symbols' <emu-xref href="#sec-well-known-symbols"></emu-xref> are considered to have a suitable identity because there are a small finite number of them and implementations do not attempt to unobservably collect them.</p>
   </emu-note>
-</emu-clause>
-<emu-clause id="sec-%canbeheldweakly%">
-  <h1>%CanBeHeldWeakly%( _argument_ )</h1>
-  <p>The <dfn>%CanBeHeldWeakly%</dfn> intrinsic is an anonymous built-in function object that is defined once for each realm. When %CanBeHeldWeakly% is called with one argument _argument_ (an ECMAScript language value) the following steps are taken:</p>
-  <emu-alg>
-    1. Return ! CanBeHeldWeakly(_argument_).
-  </emu-alg>
-  <p>The value of the [[Extensible]] internal slot of a %CanBeHeldWeakly% function is *false*.</p>
-  <p>The *"length"* property of a %CanBeHeldWeakly% function has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
-  <p>The *"name"* property of a %CanBeHeldWeakly% function has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
 </emu-clause>
 
 <emu-clause id="sec-modifications-of-weakmap">
   <h1>Modifications to WeakMap</h1>
-
-  <emu-clause id="sec-weakmap.isValidKey">
-    <h1>WeakMap.isValidKey( _key_ )</h1>
-    <p>The initial value of the isValidKey property is the %CanBeHeldWeakly% intrinsic object.</p>
-    <p>This property has the attributes { [[Writable]]: *true*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
-  </emu-clause>
 
   <emu-clause id="sec-weakmap.prototype.delete">
     <h1>WeakMap.prototype.delete ( _key_ )</h1>
@@ -164,12 +145,6 @@ contributors:
 <emu-clause id="sec-modifications-of-weakset">
   <h1>Modifications to WeakSet</h1>
 
-  <emu-clause id="sec-weakset.isValidValue">
-    <h1>WeakSet.isValidValue( _value_ )</h1>
-    <p>The initial value of the isValidValue property is the %CanBeHeldWeakly% intrinsic object.</p>
-    <p>This property has the attributes { [[Writable]]: *true*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
-  </emu-clause>
-
   <emu-clause id="sec-weakset.prototype.add">
     <h1>WeakSet.prototype.add ( _value_ )</h1>
     <p>The following steps are taken:</p>
@@ -223,12 +198,6 @@ contributors:
 <emu-clause id="sec-modifications-of-weakref-finalization">
   <h1>Modifications to WeakRef and FinalizationRegistry</h1>
 
-  <emu-clause id="sec-weak-ref.isValidTarget">
-    <h1>WeakRef.isValidTarget( _target_ )</h1>
-    <p>The initial value of the isValidValue property is the %CanBeHeldWeakly% intrinsic object.</p>
-    <p>This property has the attributes { [[Writable]]: *true*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
-  </emu-clause>
-
   <emu-clause id="sec-weak-ref-target">
     <h1>WeakRef ( _target_ )</h1>
     <p>When the `WeakRef` function is called with argument _target_, the following steps are taken:</p>
@@ -241,12 +210,6 @@ contributors:
       1. Set _weakRef_.[[WeakRefTarget]] to _target_.
       1. Return _weakRef_.
     </emu-alg>
-  </emu-clause>
-
-  <emu-clause id="sec-finalization-registry.isValidTarget">
-    <h1>FinalizationRegistry.isValidTarget( _target_ )</h1>
-    <p>The initial value of the isValidTarget property is the %CanBeHeldWeakly% intrinsic object.</p>
-    <p>This property has the attributes { [[Writable]]: *true*, [[Enumerable]]: *false*, [[Configurable]]: *true* }.</p>
   </emu-clause>
 
   <emu-clause id="sec-finalization-registry.prototype.register">
