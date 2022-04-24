@@ -72,7 +72,7 @@ contributors:
 </emu-clause>
 
 <emu-clause id="sec-modifications-of-weakmap">
-  <h1>Modifications to WeakMap</h1>
+  <h1>Modifications to the properties of WeakMap.prototype</h1>
 
   <emu-clause id="sec-weakmap.prototype.delete">
     <h1>WeakMap.prototype.delete ( _key_ )</h1>
@@ -143,7 +143,7 @@ contributors:
 </emu-clause>
 
 <emu-clause id="sec-modifications-of-weakset">
-  <h1>Modifications to WeakSet</h1>
+  <h1>Modifications to the properties of WeakSet.prototype</h1>
 
   <emu-clause id="sec-weakset.prototype.add">
     <h1>WeakSet.prototype.add ( _value_ )</h1>
