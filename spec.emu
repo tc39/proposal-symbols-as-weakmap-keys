@@ -13,17 +13,61 @@ contributors:
   - Leo Balter
   - Caridy Patiño
   - Rick Waldron
+  - Ashley Claymore
 </pre>
 
-<emu-clause id="sec-isobjectorsymbol" aoid="IsObjectOrSymbol">
-  <h1>IsObjectOrSymbol ( _argument_ )</h1>
-  <p>The abstract operation IsObjectOrSymbol takes argument _argument_ (an ECMAScript language value) and determines if its Type is Object or Symbol. This operation performs the following steps when called:</p>
+<emu-clause id="sec-executable-code-and-execution-contexts">
+  <h1>Executable Code and Execution Contexts</h1>
+
+  <emu-clause id="sec-weakref-processing-model">
+    <h1>Processing Model of WeakRef and FinalizationRegistry Objects</h1>
+
+    <emu-note>
+      This section needs updating to incoprate weakly held symbols.
+    </emu-note>
+  </emu-clause>
+
+  <emu-clause id="sec-addtokeptobjects" type="abstract operation">
+    <h1>
+      AddToKeptObjects (
+        <del>_object_: an Object,</del>
+        <ins>_value_: an Object or a Symbol,</ins>
+      ): ~unused~
+    </h1>
+    <dl class="header">
+    </dl>
+    <emu-alg>
+      1. Let _agentRecord_ be the surrounding agent's Agent Record.
+      1. <del>Append _object_ to _agentRecord_.[[KeptAlive]].</del>
+      1. <ins>Append _value_ to _agentRecord_.[[KeptAlive]].</ins>
+      1. Return ~unused~.
+    </emu-alg>
+    <emu-note>
+      When the abstract operation AddToKeptObjects is called with a target object <ins>, or symbol,</ins> reference, it adds the target to a list that will point strongly at the target until ClearKeptObjects is called.
+    </emu-note>
+  </emu-clause>
+</emu-clause>
+
+<emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation" aoid="CanBeHeldWeakly">
+  <h1>
+    CanBeHeldWeakly (
+      _v_: unknown
+    ): a Boolean
+  </h1>
+  <dl class="header">
+  </dl>
   <emu-alg>
-    1. If Type(_argument_) is Object or Symbol, return *true*.
+    1. If Type(_v_) is Object, return *true*.
+    1. If Type(_v_) is Symbol, then
+      1. For each element _e_ of the GlobalSymbolRegistry List (see <emu-xref href="#sec-symbol.for"></emu-xref>), do
+        1. If SameValue(_e_.[[Symbol]], _v_) is *true*, return *false*.
+      1. Else, return *true*.
     1. Return *false*.
   </emu-alg>
   <emu-note type=editor>
-    <p>This abstract operation determines if _argument_ is considered to have a unique value being an Object or a Symbol. This enables _argument_ to be a valid key of a WeakMap or entry in a weak collection, e.g. WeakSet, WeakRef, or FinalizationRegistry.</p>
+    <p>This abstract operation determines if _v_ is considered to have an identity suitable for a weak reference. i.e. Is _v_ a valid candidate key of a WeakMap, or entry in a WeakSet, or target of a WeakRef or FinalizationRegistry.</p>
+    <p>'Registered symbols' are not considered to have a suitable identity because their identity is similar to strings, and implementations may attempt to collect them when they are unreachable.</p>
+    <p>'Well-Known symbols' <emu-xref href="#sec-well-known-symbols"></emu-xref> are considered to have a suitable identity because there are a small finite number of them and implementations do not attempt to unobservably collect them.</p>
   </emu-note>
 </emu-clause>
 
@@ -38,7 +82,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *false*.</del>
-      1. <ins>If IsObjectOrSymbol(_key_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
           1. Set _p_.[[Key]] to ~empty~.
@@ -56,7 +100,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *undefined*.</del>
-      1. <ins>If IsObjectOrSymbol(_key_) is *false*, return *undefined*.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, return *undefined*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return _p_.[[Value]].
       1. Return *undefined*.
@@ -71,7 +115,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, return *false*.</del>
-      1. <ins>If IsObjectOrSymbol(_key_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, return *false*.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, return *true*.
       1. Return *false*.
@@ -86,7 +130,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_M_, [[WeakMapData]]).
       1. Let _entries_ be the List that is _M_.[[WeakMapData]].
       1. <del>If Type(_key_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If IsObjectOrSymbol(_key_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_key_) is *false*, throw a *TypeError* exception.</ins>
       1. For each Record { [[Key]], [[Value]] } _p_ of _entries_, do
         1. If _p_.[[Key]] is not ~empty~ and SameValue(_p_.[[Key]], _key_) is *true*, then
           1. Set _p_.[[Value]] to _value_.
@@ -108,7 +152,7 @@ contributors:
       1. Let _S_ be the *this* value.
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. <del>If Type(_value_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If IsObjectOrSymbol(_value_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_value_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
@@ -125,7 +169,7 @@ contributors:
       1. Let _S_ be the *this* value.
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. <del>If Type(_value_) is not Object, return *false*.</del>
-      1. <ins>If IsObjectOrSymbol(_value_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, then
@@ -143,7 +187,7 @@ contributors:
       1. Perform ? RequireInternalSlot(_S_, [[WeakSetData]]).
       1. Let _entries_ be the List that is _S_.[[WeakSetData]].
       1. <del>If Type(_value_) is not Object, return *false*.</del>
-      1. <ins>If IsObjectOrSymbol(_value_) is *false*, return *false*.</ins>
+      1. <ins>If CanBeHeldWeakly(_value_) is *false*, return *false*.</ins>
       1. For each element _e_ of _entries_, do
         1. If _e_ is not ~empty~ and SameValue(_e_, _value_) is *true*, return *true*.
       1. Return *false*.
@@ -153,13 +197,14 @@ contributors:
 
 <emu-clause id="sec-modifications-of-weakref-finalization">
   <h1>Modifications to WeakRef and FinalizationRegistry</h1>
+
   <emu-clause id="sec-weak-ref-target">
     <h1>WeakRef ( _target_ )</h1>
     <p>When the `WeakRef` function is called with argument _target_, the following steps are taken:</p>
     <emu-alg>
       1. If NewTarget is *undefined*, throw a *TypeError* exception.
       1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If IsObjectOrSymbol(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _weakRef_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%WeakRef.prototype%"*, &laquo; [[WeakRefTarget]] &raquo;).
       1. Perform ! AddToKeptObjects(_target_).
       1. Set _weakRef_.[[WeakRefTarget]] to _target_.
@@ -174,10 +219,10 @@ contributors:
       1. Let _finalizationRegistry_ be the *this* value.
       1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
       1. <del>If Type(_target_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If IsObjectOrSymbol(_target_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_target_) is *false*, throw a *TypeError* exception.</ins>
       1. If SameValue(_target_, _heldValue_) is *true*, throw a *TypeError* exception.
       1. <del>If Type(_unregisterToken_) is not Object, then</del>
-      1. <ins>If IsObjectOrSymbol(_unregisterToken_) is *false*, then</ins>
+      1. <ins>If CanBeHeldWeakly(_unregisterToken_) is *false*, then</ins>
         1. If _unregisterToken_ is not *undefined*, throw a *TypeError* exception.
         1. Set _unregisterToken_ to ~empty~.
       1. Let _cell_ be the Record { [[WeakRefTarget]]: _target_, [[HeldValue]]: _heldValue_, [[UnregisterToken]]: _unregisterToken_ }.
@@ -193,7 +238,7 @@ contributors:
       1. Let _finalizationRegistry_ be the *this* value.
       1. Perform ? RequireInternalSlot(_finalizationRegistry_, [[Cells]]).
       1. <del>If Type(_unregisterToken_) is not Object, throw a *TypeError* exception.</del>
-      1. <ins>If IsObjectOrSymbol(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
+      1. <ins>If CanBeHeldWeakly(_unregisterToken_) is *false*, throw a *TypeError* exception.</ins>
       1. Let _removed_ be *false*.
       1. For each Record { [[WeakRefTarget]], [[HeldValue]], [[UnregisterToken]] } _cell_ of _finalizationRegistry_.[[Cells]], do
         1. If _cell_.[[UnregisterToken]] is not ~empty~ and SameValue(_cell_.[[UnregisterToken]], _unregisterToken_) is *true*, then
