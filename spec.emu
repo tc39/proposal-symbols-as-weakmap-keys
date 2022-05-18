@@ -23,7 +23,7 @@ contributors:
     <h1>Processing Model of WeakRef and FinalizationRegistry Objects</h1>
 
     <emu-note>
-      This section needs updating to incoprate weakly held symbols.
+      Proposed changes tracked here: https://github.com/tc39/proposal-symbols-as-weakmap-keys/issues/19
     </emu-note>
   </emu-clause>
 
@@ -48,7 +48,7 @@ contributors:
   </emu-clause>
 </emu-clause>
 
-<emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation" aoid="CanBeHeldWeakly">
+<emu-clause id="sec-canbeheldweakly-abstract-operation" type="abstract operation">
   <h1>
     CanBeHeldWeakly (
       _v_: unknown
@@ -61,13 +61,13 @@ contributors:
     1. If Type(_v_) is Symbol, then
       1. For each element _e_ of the GlobalSymbolRegistry List (see <emu-xref href="#sec-symbol.for"></emu-xref>), do
         1. If SameValue(_e_.[[Symbol]], _v_) is *true*, return *false*.
-      1. Else, return *true*.
+      1. Return *true*.
     1. Return *false*.
   </emu-alg>
   <emu-note type=editor>
     <p>This abstract operation determines if _v_ is considered to have an identity suitable for a weak reference. i.e. Is _v_ a valid candidate key of a WeakMap, or entry in a WeakSet, or target of a WeakRef or FinalizationRegistry.</p>
-    <p>'Registered symbols' are not considered to have a suitable identity because their identity is similar to strings, and implementations may attempt to collect them when they are unreachable.</p>
-    <p>'Well-Known symbols' <emu-xref href="#sec-well-known-symbols"></emu-xref> are considered to have a suitable identity because there are a small finite number of them and implementations do not attempt to unobservably collect them.</p>
+    <p>'Registered symbols' are not considered to have a suitable identity because their identity is similar to strings. Implementations may attempt to collect them when they are unreachable.</p>
+    <p>'Well-Known symbols' <emu-xref href="#sec-well-known-symbols"></emu-xref> return *true* - this should not be interpreted as evidence that using them as a key in a WeakMap will not result in a memory leak.</p>
   </emu-note>
 </emu-clause>
 
