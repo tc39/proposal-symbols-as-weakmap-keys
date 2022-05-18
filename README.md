@@ -10,6 +10,7 @@ Stage 2
 - Leo Balter (@leobalter)
 - Caridy Patiño (@caridy)
 - Rick Waldron (@rwaldron)
+- Ashley Claymore (@acutmore)
 
 [Spec text](https://tc39.es/proposal-symbols-as-weakmap-keys)
 
