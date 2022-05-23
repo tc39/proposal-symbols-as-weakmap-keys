@@ -32,7 +32,7 @@ See [earlier discussion](https://github.com/tc39/ecma262/issues/1194) on Symbols
 
 ### Draft PR
 
-See the current [draft PR to ECMA-262](https://github.com/tc39/ecma262/pull/2038) with the proposed spec.
+See the current [draft PR to ECMA-262](https://github.com/tc39/ecma262/pull/2777) with the proposed spec.
 
 ## Use Cases
 
@@ -50,12 +50,27 @@ const someObject = { /* data data data */ };
 weak.set(key, someObject);
 ```
 
-### Realms, Membranes, and Virtualization
+### ShadowRealms, Membranes, and Virtualization
 
-The revised Realms proposal disallow access to object values. For most virtualization cases, a membrane system is built on top of Realms-related API to connect references using WeakMaps. A Symbol value, being a primitive value, is still accessible, allowing membranes being structured with proper weakmaps using connected identities.
+The [ShadowRealms proposal](https://github.com/tc39/proposal-shadowrealm) disallows access to object values. For most virtualization cases, a membrane system is built on top of Realms-related API to connect references using WeakMaps. A Symbol value, being a primitive value, is still accessible, allowing membranes being structured with proper weakmaps using connected identities.
 
 ```javascript
-// TODO: Add example here
+const objectLookup = new WeakMap();
+const otherRealm = new ShadowRealm();
+const coinFlip = otherRealm.evaluate(`(a, b) => Math.random() > 0.5 ? a : b;`);
+
+// later...
+let a = { name: 'alice' };
+let b = { name: 'bob' };
+let symbolA = Symbol();
+let symbolB = Symbol();
+objectLookup.set(symbolA, a);
+objectLookup.set(symbolB, b);
+a = b = null; // ok to drop direct object references
+
+// connected identities preserved as the symbols round-tripped through the other realm
+let chosen = objectLookup.get(coinFlip(symbolA, symbolB));
+assert(['alice', 'bob'].includes(chosen.name));
 ```
 
 ### Record and Tuples
@@ -64,7 +79,7 @@ This proposal aims to solve a problem space introduced by the [Record & Tuple Pr
 
 tl;dr We see Symbols, dereferenced through WeakMaps, as the most reasonable way forward to reference Objects from Records and Tuples, given all the constraints raised in the discussion so far.
 
-There are some open questions as to how this should they work exactly, and also valid ergonomics/ecosystem coordination issues, which we hope to resolve/validate in the course of the TC39 stage process. We'll start with an understanding of the problem space, including why Records and Tuples are a good first step without this feature. Then, we'll examine various possible solutions, with their pros and cons, 
+There are some open questions as to how this should they work exactly, and also valid ergonomics/ecosystem coordination issues, which we hope to resolve/validate in the course of the TC39 stage process. We'll start with an understanding of the problem space, including why Records and Tuples are a good first step without this feature. Then, we'll examine various possible solutions, with their pros and cons,
 
 [Records & Tuples][rtp] can't contain objects, functions, or methods and will throw a `TypeError` when someone attempts to do it:
 
@@ -102,31 +117,23 @@ const server = #{
 refs.deref(server.handler)({ /* ... */ });
 ```
 
-## Some open questions
-
-### Well-known and registered symbols as WeakMap keys
+## Well-known and Registered symbols as WeakMap keys
 
 Some TC39 delegates have argued strongly in either direction. We see both "allowing" and "disallowing" as acceptable options.
 
-Allowing registered symbols doesn't seem so bad, since registered Symbols are analogous to Objects that are held alive for the lifetime of the Realm. In the context of a Realm that stays alive as long as there's JS running (e.g., on the Web, the Realm of a Worker), things like `Symbol.iterator` are analogous to primordials like `Object.prototype` and `Array.prototype`, and registered `Symbol.for()` symbols are analogous to properties of the global object, in terms of lifetime. Just because these will stay alive doesn't mean we disallow them as WeakMap keys.
+### [Registered](https://tc39.es/ecma262/multipage#sec-symbol.for) symbols
 
-Prohibiting registered symbols doesn't seem so bad, since it's already readily observable whether a Symbol is registered, and it's not very useful to include these as WeakMap keys. Therefore, it's hard to see what practical or consistency problems the prohibition would create, or why it would be surprising (if there's a meaningful error message).
+Disallowing registered symbols is discussed in [issue 21](https://github.com/tc39/proposal-symbols-as-weakmap-keys/issues/21).
 
-#### Caveat: Retrievable Symbols
+### [Well-Known](https://tc39.es/ecma262/multipage#sec-well-known-symbols) symbols
 
-If a symbol is created using [`Symbol.for`](https://tc39.es/ecma262/#sec-symbol.for), the value is registered within a `GlobalSymbolRegistry` List shared by all realms and retrievable through [`Symbol.keyFor`](https://tc39.es/ecma262/#sec-symbol.keyfor). [Well-known symbol values](https://tc39.es/ecma262/#sec-well-known-symbols) are also shared by all realms. These are the only events specified in ECMAScript that might remove some of the unique distinctness of a symbol value.
+Allowing well-known symbols doesn't seem so bad, since they are analogous to Objects that are held alive for the lifetime of the Realm. In the context of a Realm that stays alive as long as there is JS running (e.g., on the Web, the Realm of a Worker), things like `Symbol.iterator` are analogous to primordials like `Object.prototype` and `Array.prototype`. Just because these will stay alive doesn't mean we disallow them as WeakMap keys.
 
-At least, usage of `Symbol.for` and `Symbol.keyFor` is the only built-in way within a single Realm to retrieve Symbol values after they are dereferenced by user code.
+While 'registered' symbols can be detected using `Symbol.keyFor`, there is currently no built in predicate to test if a symbol is 'well-known' or not. If 'well-known' symbols were not allowed as keys in a WeakMap code would need to ensure it handles this potential abrupt completion.
 
-In this case, a solution would be limiting the WeakMap keys extension to only non-retrievable Symbols at some capacity. This means, if `GlobalSymbolRegistry` contains a Symbol value, this value is not accepted as a key for a WeakMap and might end as an abrupt completion if a code tries to do so.
+## Support for Symbols in WeakRefs and FinalizationRegistry
 
-The current proposed spec doesn't reflect this solution, while it still allows any Symbol or Object value to become a WeakMap Key.
-
-### Support for Symbols in WeakRefs and FinalizationRegistry
-
-We could support Symbols in WeakRefs and FinalizationRegistry, or not. It's not clear what the use cases are, but it would seem consistent with adding them as WeakMap keys.
-
-As starting points, we propose that all Symbols be allowed as WeakMap keys, WeakSet entries, and in WeakRefs and FinalizationRegistry.
+We should also support Symbols in WeakRefs and FinalizationRegistry. Not only is this consistent with Objects as WeakMap keys but it also enables user-land to build/demonstrate more advanced functionality. e.g. WeakMaps that support Records/Tuples as keys.
 
 ## Summing up
 

@@ -5,7 +5,7 @@
 <script src="./spec.js"></script>
 <pre class="metadata">
 title: Symbol as WeakMap Keys Proposal
-stage: 1
+stage: 2
 contributors:
   - Robin Ricard
   - Rick Button
@@ -23,7 +23,7 @@ contributors:
     <h1>Processing Model of WeakRef and FinalizationRegistry Objects</h1>
 
     <emu-note>
-      Proposed changes tracked here: https://github.com/tc39/proposal-symbols-as-weakmap-keys/issues/19
+      Full set of proposed changes here: <a href="https://arai-a.github.io/ecma262-compare/?pr=2777">https://arai-a.github.io/ecma262-compare/?pr=2777</a>
     </emu-note>
   </emu-clause>
 
@@ -64,7 +64,7 @@ contributors:
       1. Return *true*.
     1. Return *false*.
   </emu-alg>
-  <emu-note type=editor>
+  <emu-note type="editor">
     <p>This abstract operation determines if _v_ is considered to have an identity suitable for a weak reference. i.e. Is _v_ a valid candidate key of a WeakMap, or entry in a WeakSet, or target of a WeakRef or FinalizationRegistry.</p>
     <p>'Registered symbols' are not considered to have a suitable identity because their identity is similar to strings. Implementations may attempt to collect them when they are unreachable.</p>
     <p>'Well-Known symbols' <emu-xref href="#sec-well-known-symbols"></emu-xref> return *true* - this should not be interpreted as evidence that using them as a key in a WeakMap will not result in a memory leak.</p>
