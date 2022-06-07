@@ -1,6 +1,6 @@
 # Symbols as WeakMap keys
 
-Stage 2
+Stage 3
 
 **Coauthors/champions**:
 
